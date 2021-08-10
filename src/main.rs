@@ -1,5 +1,8 @@
-use std::io::{self, Write};
+mod color;
 mod vec3;
+use crate::color::write_color;
+use crate::color::Color;
+use std::io::{self, Write};
 
 fn main() {
     let image_width = 256;
@@ -11,14 +14,13 @@ fn main() {
         eprint!("\rScanlines remaining: {} ", j);
         io::stdout().flush().unwrap();
         for i in 0..image_width {
-            let r = (i as f64) / (image_width - 1) as f64;
-            let g = (j as f64) / (image_height - 1) as f64;
-            let b = 0.25;
+            let color = Color {
+                r: (i as f64) / (image_width - 1) as f64,
+                g: (j as f64) / (image_height - 1) as f64,
+                b: 0.25,
+            };
 
-            let ir = (255.999f64 * r) as u32;
-            let ig = (255.999f64 * g) as u32;
-            let ib = (255.999f64 * b) as u32;
-            println!("{} {} {}", ir, ig, ib);
+            write_color(color);
         }
     }
     eprintln!("Done.");

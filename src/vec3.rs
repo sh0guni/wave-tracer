@@ -1,7 +1,7 @@
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-struct Vec3 {
+pub struct Vec3 {
     x: f64,
     y: f64,
     z: f64,
@@ -101,8 +101,7 @@ impl Vec3 {
     }
 }
 
-type Point3 = Vec3;
-type Color = Vec3;
+pub type Point3 = Vec3;
 
 #[cfg(test)]
 mod tests {
