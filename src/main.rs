@@ -1,9 +1,17 @@
 mod color;
-mod vec3;
 mod ray;
+mod vec3;
 use crate::color::write_color;
 use crate::color::Color;
+use crate::ray::Ray;
 use std::io::{self, Write};
+
+// Returns a simple gradient as background
+fn ray_color(r: &Ray) -> Color {
+    let unit_direction = r.direction.unit_vector();
+    let t = 0.5 * (unit_direction.y + 1.0);
+    return (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0);
+}
 
 fn main() {
     let image_width = 256;
