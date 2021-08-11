@@ -1,5 +1,6 @@
 mod color;
 mod vec3;
+mod ray;
 use crate::color::write_color;
 use crate::color::Color;
 use std::io::{self, Write};
