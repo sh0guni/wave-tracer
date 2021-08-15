@@ -92,7 +92,7 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn dot(&self, rhs: Self) -> f64 {
+    pub fn dot(&self, rhs: &Self) -> f64 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
@@ -171,13 +171,13 @@ mod tests {
     #[test]
     fn dot_vec3() {
         assert_eq!(
-            Vec3::new(1.0, 3.0, -5.0).dot(Vec3::new(4.0, -2.0, -1.0)),
+            Vec3::new(1.0, 3.0, -5.0).dot(&Vec3::new(4.0, -2.0, -1.0)),
             3.0
         );
 
         // Two vectors at right angles to each other have a dot product of zero
         assert_eq!(
-            Vec3::new(-12.0, 16.0, 0.0).dot(Vec3::new(12.0, 9.0, 0.0)),
+            Vec3::new(-12.0, 16.0, 0.0).dot(&Vec3::new(12.0, 9.0, 0.0)),
             0.0
         );
     }
