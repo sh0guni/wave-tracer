@@ -1,4 +1,5 @@
 mod color;
+mod hittable;
 mod ray;
 mod vec3;
 use crate::color::write_color;
