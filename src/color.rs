@@ -1,4 +1,5 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use crate::vec3::Vec3;
+use std::ops::{Add, Mul};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color {
@@ -22,6 +23,18 @@ impl Add for Color {
             r: self.r + other.r,
             g: self.g + other.g,
             b: self.b + other.b,
+        }
+    }
+}
+
+impl Add<Color> for Vec3 {
+    type Output = Color;
+
+    fn add(self, other: Color) -> Self::Output {
+        Color {
+            r: self.x + other.r,
+            g: self.y + other.g,
+            b: self.z + other.b,
         }
     }
 }
