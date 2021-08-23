@@ -1,5 +1,5 @@
 use crate::vec3::Vec3;
-use std::ops::{Add, Mul};
+use std::ops::{Add, AddAssign, Mul};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color {
@@ -8,10 +8,19 @@ pub struct Color {
     pub b: f64,
 }
 
-pub fn write_color(color: Color) {
-    let ir = (255.999f64 * color.r) as u32;
-    let ig = (255.999f64 * color.g) as u32;
-    let ib = (255.999f64 * color.b) as u32;
+fn translate_color_value(n: f64) -> u32 {
+    (256.0 * n.clamp(0.0, 0.999)) as u32
+}
+
+pub fn write_color(color: Color, samples_per_pixel: usize) {
+    // Divbide the color by the number of samples.
+    let scale = 1.0 / samples_per_pixel as f64;
+
+    let Color { r, g, b } = color * scale;
+
+    let ir = translate_color_value(r);
+    let ig = translate_color_value(g);
+    let ib = translate_color_value(b);
     println!("{} {} {}", ir, ig, ib);
 }
 
@@ -36,6 +45,16 @@ impl Add<Color> for Vec3 {
             g: self.y + other.g,
             b: self.z + other.b,
         }
+    }
+}
+
+impl AddAssign for Color {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self {
+            r: self.r + other.r,
+            g: self.g + other.g,
+            b: self.b + other.b,
+        };
     }
 }
 

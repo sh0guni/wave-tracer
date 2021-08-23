@@ -1,3 +1,4 @@
+mod camera;
 mod color;
 mod hittable;
 mod hittable_list;
@@ -5,6 +6,7 @@ mod ray;
 mod sphere;
 mod util;
 mod vec3;
+use crate::camera::Camera;
 use crate::color::write_color;
 use crate::color::Color;
 use crate::hittable::Hittable;
@@ -12,6 +14,8 @@ use crate::hittable_list::HittableList;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
+use rand::distributions::Standard;
+use rand::{thread_rng, Rng};
 use std::io::{self, Write};
 
 fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
@@ -28,6 +32,7 @@ fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400.0;
     let image_height = (image_width / aspect_ratio) as u32;
+    let samples_per_pixel = 100;
 
     // World
     let world = HittableList {
@@ -38,15 +43,7 @@ fn main() {
     };
 
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Point3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner =
-        origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
+    let cam = Camera::new();
 
     // Render
 
@@ -56,15 +53,18 @@ fn main() {
         eprint!("\rScanlines remaining: {} ", j);
         io::stdout().flush().unwrap();
         for i in 0..image_width as u32 {
-            let u = (i as f64) / (image_width - 1.0);
-            let v = (j as f64) / (image_height as f64 - 1.0);
-            let r = Ray::new(
-                origin,
-                lower_left_corner + u * horizontal + v * vertical - origin,
-            );
-            let pixel_color = ray_color(&r, &world);
+            let pixel_color = thread_rng()
+                .sample_iter::<(f64, f64), &Standard>(&Standard)
+                .take(samples_per_pixel)
+                .map(|(ir, ij)| {
+                    let u = (i as f64 + ir) / (image_width - 1.0);
+                    let v = (j as f64 + ij) / (image_height as f64 - 1.0);
+                    let r = cam.get_ray(u, v);
+                    ray_color(&r, &world)
+                })
+                .fold(Color::new(0.0, 0.0, 0.0), |acc, c| acc + c);
 
-            write_color(pixel_color);
+            write_color(pixel_color, samples_per_pixel);
         }
     }
     eprintln!("Done.");
