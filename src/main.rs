@@ -22,7 +22,7 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: usize) -> Color {
     if depth == 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
-    if let Some(rec) = world.hit(r, 0.0, f64::INFINITY) {
+    if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
         let target = rec.p + rec.normal + random_in_unit_sphere();
         return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1);
     }
