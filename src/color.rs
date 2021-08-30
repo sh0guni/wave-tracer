@@ -18,9 +18,9 @@ pub fn write_color(color: Color, samples_per_pixel: usize) {
 
     let Color { r, g, b } = color * scale;
 
-    let ir = translate_color_value(r);
-    let ig = translate_color_value(g);
-    let ib = translate_color_value(b);
+    let ir = translate_color_value(r.sqrt());
+    let ig = translate_color_value(g.sqrt());
+    let ib = translate_color_value(b.sqrt());
     println!("{} {} {}", ir, ig, ib);
 }
 
