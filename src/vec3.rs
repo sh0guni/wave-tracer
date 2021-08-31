@@ -1,5 +1,3 @@
-use rand::distributions::{Distribution, Uniform};
-use rand::thread_rng;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -108,22 +106,6 @@ impl Vec3 {
 
     pub fn unit_vector(self) -> Self {
         self / self.length()
-    }
-}
-
-pub fn random_in_unit_sphere() -> Vec3 {
-    let mut rng = thread_rng();
-    loop {
-        let between = Uniform::from(-1.0..1.0);
-        let p = Vec3::new(
-            between.sample(&mut rng),
-            between.sample(&mut rng),
-            between.sample(&mut rng),
-        );
-
-        if p.length_squared() < 1.0 {
-            return p;
-        }
     }
 }
 

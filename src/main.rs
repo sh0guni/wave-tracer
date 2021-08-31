@@ -1,5 +1,6 @@
 mod camera;
 mod color;
+mod diffusion;
 mod hittable;
 mod hittable_list;
 mod ray;
@@ -9,11 +10,12 @@ mod vec3;
 use crate::camera::Camera;
 use crate::color::write_color;
 use crate::color::Color;
+use crate::diffusion::{random_in_hemisphere, random_in_unit_sphere, random_unit_vector};
 use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::vec3::{random_in_unit_sphere, Point3, Vec3};
+use crate::vec3::{Point3, Vec3};
 use rand::distributions::Standard;
 use rand::{thread_rng, Rng};
 use std::io::{self, Write};
@@ -23,7 +25,7 @@ fn ray_color(r: &Ray, world: &impl Hittable, depth: usize) -> Color {
         return Color::new(0.0, 0.0, 0.0);
     }
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
-        let target = rec.p + rec.normal + random_in_unit_sphere();
+        let target = rec.p + rec.normal + random_unit_vector();
         return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1);
     }
     let unit_direction = r.direction.unit_vector();

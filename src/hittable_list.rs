@@ -8,17 +8,14 @@ pub struct HittableList {
 
 impl Hittable for HittableList {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        let (hit_record, _) = self
-            .objects
-            .iter()
-            .fold((None, t_max), |acc, x| {
-                let (_, closest_so_far) = acc;
-                let hit_record = x.hit(r, t_min, closest_so_far);
-                match hit_record {
-                    Some(hit) => (hit_record, hit.t),
-                    None => acc,
-                }
-            });
+        let (hit_record, _) = self.objects.iter().fold((None, t_max), |acc, x| {
+            let (_, closest_so_far) = acc;
+            let hit_record = x.hit(r, t_min, closest_so_far);
+            match hit_record {
+                Some(hit) => (hit_record, hit.t),
+                None => acc,
+            }
+        });
         return hit_record;
     }
 }
