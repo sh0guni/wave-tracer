@@ -14,7 +14,8 @@ use crate::color::Color;
 use crate::diffusion::{random_in_hemisphere, random_in_unit_sphere, random_unit_vector};
 use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
-use crate::material::{Lambertian, Metal};
+use crate::material::Material;
+use crate::material::{Dielectric, Lambertian, Metal};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
@@ -52,9 +53,9 @@ fn main() {
         albedo: Color::new(0.8, 0.8, 0.0),
     });
     let material_center = Rc::new(Lambertian {
-        albedo: Color::new(0.7, 0.3, 0.3),
+        albedo: Color::new(0.1, 0.2, 0.5),
     });
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_left: Rc<dyn Material> = Rc::new(Dielectric { ir: 1.5 });
     let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
     let world = HittableList {
@@ -72,6 +73,11 @@ fn main() {
             Box::new(Sphere {
                 center: Point3::new(-1.0, 0.0, -1.0),
                 radius: 0.5,
+                material: Rc::clone(&material_left),
+            }),
+            Box::new(Sphere {
+                center: Point3::new(-1.0, 0.0, -1.0),
+                radius: -0.4,
                 material: material_left,
             }),
             Box::new(Sphere {
