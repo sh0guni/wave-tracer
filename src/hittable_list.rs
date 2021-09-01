@@ -12,7 +12,10 @@ impl Hittable for HittableList {
             let (_, closest_so_far) = acc;
             let hit_record = x.hit(r, t_min, closest_so_far);
             match hit_record {
-                Some(hit) => (hit_record, hit.t),
+                Some(ref hit) => {
+                    let t = hit.t;
+                    (hit_record, t)
+                }
                 None => acc,
             }
         });

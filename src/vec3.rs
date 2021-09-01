@@ -107,6 +107,11 @@ impl Vec3 {
     pub fn unit_vector(self) -> Self {
         self / self.length()
     }
+
+    pub fn near_zero(&self) -> bool {
+        const s: f64 = 1e-8;
+        self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
+    }
 }
 
 pub type Point3 = Vec3;

@@ -14,20 +14,24 @@ use crate::color::Color;
 use crate::diffusion::{random_in_hemisphere, random_in_unit_sphere, random_unit_vector};
 use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
+use crate::material::Lambertian;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
 use rand::distributions::Standard;
 use rand::{thread_rng, Rng};
 use std::io::{self, Write};
+use std::rc::Rc;
 
 fn ray_color(r: &Ray, world: &impl Hittable, depth: usize) -> Color {
     if depth == 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
-        let target = rec.p + rec.normal + random_unit_vector();
-        return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1);
+        if let Some(scatter) = rec.material.scatter(r, &rec) {
+            return scatter.attenuation * ray_color(&scatter.scattered, world, depth - 1);
+        }
+        return Color::new(0.0, 0.0, 0.0);
     }
     let unit_direction = r.direction.unit_vector();
     let t = 0.5 * (unit_direction.y + 1.0);
@@ -43,10 +47,27 @@ fn main() {
     const MAX_DEPTH: usize = 50;
 
     // World
+
+    let material_ground = Rc::new(Lambertian {
+        albedo: Color::new(0.8, 0.8, 0.0),
+    });
+
+    let material_center = Rc::new(Lambertian {
+        albedo: Color::new(0.7, 0.3, 0.3),
+    });
+
     let world = HittableList {
         objects: vec![
-            Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)),
-            Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
+            Box::new(Sphere {
+                center: Point3::new(0.0, 0.0, -1.0),
+                radius: 0.5,
+                material: material_center,
+            }),
+            Box::new(Sphere {
+                center: Point3::new(0.0, -100.5, -1.0),
+                radius: 100.0,
+                material: material_ground,
+            }),
         ],
     };
 
