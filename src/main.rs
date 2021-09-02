@@ -21,6 +21,7 @@ use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
 use rand::distributions::Standard;
 use rand::{thread_rng, Rng};
+use std::f64::consts::PI;
 use std::io::{self, Write};
 use std::rc::Rc;
 
@@ -89,7 +90,7 @@ fn main() {
     };
 
     // Camera
-    let cam = Camera::new();
+    let cam = Camera::new(90.0, ASPECT_RATIO);
 
     // Render
 
