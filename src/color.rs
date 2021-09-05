@@ -12,7 +12,7 @@ fn translate_color_value(n: f64) -> u32 {
     (256.0 * n.clamp(0.0, 0.999)) as u32
 }
 
-pub fn write_color(color: Color, samples_per_pixel: usize) {
+pub fn get_pixel(color: Color, samples_per_pixel: usize) -> String {
     // Divbide the color by the number of samples.
     let scale = 1.0 / samples_per_pixel as f64;
 
@@ -21,7 +21,7 @@ pub fn write_color(color: Color, samples_per_pixel: usize) {
     let ir = translate_color_value(r.sqrt());
     let ig = translate_color_value(g.sqrt());
     let ib = translate_color_value(b.sqrt());
-    println!("{} {} {}", ir, ig, ib);
+    format!("{} {} {}\n", ir, ig, ib)
 }
 
 impl Add for Color {

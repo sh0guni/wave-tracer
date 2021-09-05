@@ -109,24 +109,39 @@ fn main() {
     // Render
 
     println!("P3\n{} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
+    let scanlines = Arc::new(Mutex::new(IMAGE_HEIGHT));
 
-    for j in (0..IMAGE_HEIGHT).rev() {
-        eprint!("\rScanlines remaining: {} ", j);
-        io::stdout().flush().unwrap();
-        for i in 0..IMAGE_WIDTH as u32 {
-            let pixel_color = thread_rng()
-                .sample_iter::<(f64, f64), &Standard>(&Standard)
-                .take(SAMPLES_PER_PIXEL)
-                .map(|(ir, ij)| {
-                    let u = (i as f64 + ir) / (IMAGE_WIDTH - 1.0);
-                    let v = (j as f64 + ij) / (IMAGE_HEIGHT as f64 - 1.0);
-                    let r = cam.get_ray(u, v);
-                    ray_color(&r, &world, MAX_DEPTH)
+    let image: String = (0..IMAGE_HEIGHT)
+        .rev()
+        .into_iter()
+        .map(|j| {
+            io::stdout().flush().unwrap();
+            let line: String = (0..IMAGE_WIDTH as u32)
+                .into_iter()
+                .map(|i| {
+                    let pixel_color = thread_rng()
+                        .sample_iter::<(f64, f64), &Standard>(&Standard)
+                        .take(SAMPLES_PER_PIXEL)
+                        .map(|(ir, ij)| {
+                            let u = (i as f64 + ir) / (IMAGE_WIDTH - 1.0);
+                            let v = (j as f64 + ij) / (IMAGE_HEIGHT as f64 - 1.0);
+                            let r = cam.get_ray(u, v);
+                            ray_color(&r, &world, MAX_DEPTH)
+                        })
+                        .fold(Color::new(0.0, 0.0, 0.0), |acc, c| acc + c);
+
+                    let pixel = get_pixel(pixel_color, SAMPLES_PER_PIXEL);
+                    pixel
                 })
-                .fold(Color::new(0.0, 0.0, 0.0), |acc, c| acc + c);
+                .collect();
+            let scanlines = Arc::clone(&scanlines);
+            let mut scanline = scanlines.lock().unwrap();
+            *scanline -= 1;
+            eprint!("\rScanlines remaining: {} ", scanline);
+            line
+        })
+        .collect();
 
-            write_color(pixel_color, SAMPLES_PER_PIXEL);
-        }
-    }
+    print!("{}", image);
     eprintln!("Done.");
 }

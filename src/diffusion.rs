@@ -39,7 +39,7 @@ pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
 pub fn random_in_unit_disk() -> Vec3 {
     let mut rng = thread_rng();
     loop {
-        let (x, y) = rng.gen::<(f64, f64)>();
+        let (x, y) = rng.gen();
         let p = Vec3::new(x, y, 0.0);
         if p.length_squared() < 1.0 {
             return p;
