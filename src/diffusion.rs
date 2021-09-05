@@ -1,12 +1,12 @@
 use crate::Vec3;
 use rand::distributions::{Distribution, Uniform};
-use rand::thread_rng;
+use rand::{thread_rng, Rng};
 
 // Simple diffuse
 pub fn random_in_unit_sphere() -> Vec3 {
     let mut rng = thread_rng();
+    let between = Uniform::from(-1.0..1.0);
     loop {
-        let between = Uniform::from(-1.0..1.0);
         let p = Vec3::new(
             between.sample(&mut rng),
             between.sample(&mut rng),
@@ -33,5 +33,16 @@ pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         in_unit_sphere
     } else {
         -in_unit_sphere
+    }
+}
+
+pub fn random_in_unit_disk() -> Vec3 {
+    let mut rng = thread_rng();
+    loop {
+        let (x, y) = rng.gen::<(f64, f64)>();
+        let p = Vec3::new(x, y, 0.0);
+        if p.length_squared() < 1.0 {
+            return p;
+        }
     }
 }
