@@ -8,8 +8,8 @@ mod ray;
 mod sphere;
 mod util;
 mod vec3;
-use crate::color::get_pixel;
 use crate::camera::Camera;
+use crate::color::get_pixel;
 use crate::color::Color;
 use crate::diffusion::{random_in_unit_sphere, random_unit_vector};
 use crate::hittable::Hittable;
@@ -21,8 +21,7 @@ use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
 use rand::distributions::{Distribution, Standard, Uniform};
 use rand::{thread_rng, Rng};
-use std::io::{self, Write};
-use std::rc::Rc;
+use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 
 fn ray_color(r: &Ray, world: &impl Hittable, depth: usize) -> Color {
@@ -46,13 +45,13 @@ fn random_scene() -> HittableList {
     let mut rng = thread_rng();
     let metal_between = Uniform::from(0.5..1.0);
 
-    let ground_material = Rc::new(Lambertian {
+    let ground_material = Lambertian {
         albedo: Color::new(0.5, 0.5, 0.5),
-    });
+    };
     objects.push(Box::new(Sphere {
         center: Point3::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
-        material: ground_material,
+        material: Box::new(ground_material),
     }));
 
     let p = Point3::new(4.0, 0.2, 0.0);
@@ -63,11 +62,11 @@ fn random_scene() -> HittableList {
             let center = Point3::new(a as f64 + 0.9 * x, 0.2, b as f64 + 0.9 * z);
 
             if (center - p).length() > 0.9 {
-                let sphere_material: Rc<dyn Material> = if choose_mat < 0.8 {
+                let sphere_material: Box<dyn Material> = if choose_mat < 0.8 {
                     let (r1, g1, b1, r2, g2, b2) = rng.gen();
                     // diffuse
                     let albedo = Color::new(r1, g1, b1) * Color::new(r2, g2, b2);
-                    Rc::new(Lambertian { albedo })
+                    Box::new(Lambertian { albedo })
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = Color::new(
@@ -76,10 +75,10 @@ fn random_scene() -> HittableList {
                         metal_between.sample(&mut rng),
                     );
                     let fuzz = rng.gen_range(0.5..1.0);
-                    Rc::new(Metal::new(albedo, fuzz))
+                    Box::new(Metal::new(albedo, fuzz))
                 } else {
                     //glass
-                    Rc::new(Dielectric { ir: 1.5 })
+                    Box::new(Dielectric { ir: 1.5 })
                 };
                 objects.push(Box::new(Sphere {
                     center,
@@ -93,13 +92,13 @@ fn random_scene() -> HittableList {
     objects.push(Box::new(Sphere {
         center: Point3::new(0.0, 1.0, 0.0),
         radius: 1.0,
-        material: Rc::new(Dielectric { ir: 1.5 }),
+        material: Box::new(Dielectric { ir: 1.5 }),
     }));
 
     objects.push(Box::new(Sphere {
         center: Point3::new(-4.0, 1.0, 0.0),
         radius: 1.0,
-        material: Rc::new(Lambertian {
+        material: Box::new(Lambertian {
             albedo: Color::new(0.4, 0.2, 0.1),
         }),
     }));
@@ -107,7 +106,7 @@ fn random_scene() -> HittableList {
     objects.push(Box::new(Sphere {
         center: Point3::new(4.0, 1.0, 0.0),
         radius: 1.0,
-        material: Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 1.0)),
+        material: Box::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
     }));
 
     HittableList { objects }
@@ -148,12 +147,11 @@ fn main() {
     let scanlines = Arc::new(Mutex::new(IMAGE_HEIGHT));
 
     let image: String = (0..IMAGE_HEIGHT)
+        .into_par_iter()
         .rev()
-        .into_iter()
         .map(|j| {
-            io::stdout().flush().unwrap();
             let line: String = (0..IMAGE_WIDTH as u32)
-                .into_iter()
+                .into_par_iter()
                 .map(|i| {
                     let pixel_color = thread_rng()
                         .sample_iter::<(f64, f64), &Standard>(&Standard)

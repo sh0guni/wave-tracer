@@ -3,12 +3,11 @@ use crate::hittable::Hittable;
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Point3;
-use std::rc::Rc;
 
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
-    pub material: Rc<dyn Material>,
+    pub material: Box<dyn Material>,
 }
 
 impl Hittable for Sphere {
@@ -27,7 +26,7 @@ impl Hittable for Sphere {
         if let Some(t) = find_root_in_range(a, half_b, t_min, t_max, sqrtd) {
             let p = r.at(t);
             let outward_normal = (p - self.center) / self.radius;
-            let rec = HitRecord::new(p, t, r, &outward_normal, Rc::clone(&self.material));
+            let rec = HitRecord::new(p, t, r, &outward_normal, &*self.material);
             return Some(rec);
         } else {
             return None;
